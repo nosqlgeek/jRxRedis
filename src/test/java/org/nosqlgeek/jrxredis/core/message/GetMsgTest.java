@@ -9,9 +9,9 @@ import org.junit.jupiter.api.Test;
 import org.nosqlgeek.jrxredis.core.helper.ByteBufHelper;
 import org.nosqlgeek.jrxredis.core.netty.RedisClientBootstrap;
 import org.nosqlgeek.jrxredis.core.netty.RedisClientHandler;
+import org.nosqlgeek.jrxredis.core.netty.RedisMsgFuture;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Future;
 
 
@@ -170,6 +170,56 @@ class GetMsgTest {
             String responseStr = ByteBufHelper.fromByteBuf(((FullBulkStringRedisMessage) f.get()).content());
             assertEquals("world:" + i, responseStr);
         }
+
+    }
+
+
+    @Test
+    void checkRandomMessageReplyOrderTest() throws Exception {
+
+        System.out.println("-- checkRandomMessageReplyOrderTest");
+
+
+        System.out.println("Setting 1000 values ...");
+        for (int i = 0; i < 1000 ; i++) {
+
+            SetMsg set = new SetMsg("hello:" + i, "world:" + i);
+            handler.sendMessage(set).retrieveResponse(1000);
+        }
+
+
+        System.out.println("Generating 50 random keys ...");
+        Random random = new Random();
+
+        Map<String, RedisMsgFuture> items = new HashMap<String, RedisMsgFuture>();
+
+        for (int i = 0; i < 50 ; i++) {
+
+            String key = "hello:" + random.nextInt(1000);
+            items.put(key, null);
+        }
+
+
+        System.out.println("Getting async randomly ...");
+        for ( String key : items.keySet()) {
+
+            items.put(key, handler.sendMessage(new GetMsg(key)).retrieveResponse());
+
+        }
+
+        System.out.println("Waiting 5 secs ...");
+        Thread.sleep(10000);
+
+        System.out.println("Checking if we retrieved the right values ...");
+
+        for ( String key : items.keySet()) {
+
+            String reqId  = key.split(":")[1];
+            String respId = ByteBufHelper.fromByteBuf(((FullBulkStringRedisMessage) items.get(key).get()).content()).split(":")[1];
+
+            assertEquals(reqId, respId);
+        }
+
 
     }
 
