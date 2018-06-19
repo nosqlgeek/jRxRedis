@@ -99,6 +99,7 @@ public class SettableRedisMsgFuture implements Future<RedisMessage> {
             StopWatch sw = new StopWatch();
             sw.start();
 
+            //TODO: This seems to be quite dirty.
             while (in == null && sw.elapsed() < timeout) {
 
                 //0.1 ms
