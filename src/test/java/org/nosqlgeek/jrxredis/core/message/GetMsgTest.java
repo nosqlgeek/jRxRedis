@@ -212,14 +212,19 @@ class GetMsgTest {
 
         System.out.println("Checking if we retrieved the right values ...");
 
-        for ( String key : items.keySet()) {
 
-            String reqId  = key.split(":")[1];
-            String respId = ByteBufHelper.fromByteBuf(((FullBulkStringRedisMessage) items.get(key).get()).content()).split(":")[1];
+        int idx1 = random.nextInt(50-1);
+        int idx2 = random.nextInt(50-1);
 
-            assertEquals(reqId, respId);
-        }
+        String key = items.keySet().toArray()[idx1].toString();
+        String reqId  = key.split(":")[1];
+        String respId = ByteBufHelper.fromByteBuf(((FullBulkStringRedisMessage) items.get(key).get()).content()).split(":")[1];
+        assertEquals(reqId, respId);
 
+        key = items.keySet().toArray()[idx2].toString();
+        reqId  = key.split(":")[1];
+        respId = ByteBufHelper.fromByteBuf(((FullBulkStringRedisMessage) items.get(key).get()).content()).split(":")[1];
+        assertEquals(reqId, respId);
 
     }
 

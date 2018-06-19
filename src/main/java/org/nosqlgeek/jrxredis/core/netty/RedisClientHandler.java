@@ -17,6 +17,9 @@ import java.util.logging.Logger;
 /**
  * Handle Redis Messages
  *
+ * BTW: Netty is an asynchronous event-driven network application framework for rapid development of maintainable high
+ * performance protocol servers & clients.
+ *
  * Messages can be passed as a String the format like 'SET key value'. In this case we will convert this String into
  * a Array consisting of just Bulk Strings.
  *
