@@ -6,17 +6,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
-public class SimpleRedisMsgBuffer implements IRedisMsgBuffer {
+public class SimpleRedisMsgBuffer implements IMsgBuffer<RedisMessage> {
 
     /**
      * The Message buffer's logger
      */
     private static final Logger LOG = Logger.getLogger(SimpleRedisMsgBuffer.class.getName());
 
-    /**
-     * Timeout in milliseconds
-     */
-    private static int TIMEOUT = 1000;
 
     /**
      * A synchronized linked list

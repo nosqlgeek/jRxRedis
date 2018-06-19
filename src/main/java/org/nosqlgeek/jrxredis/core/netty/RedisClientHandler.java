@@ -5,13 +5,12 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.redis.*;
-import org.nosqlgeek.jrxredis.core.buffer.IRedisMsgBuffer;
-import org.nosqlgeek.jrxredis.core.buffer.SimpleRedisMsgBuffer;
-import org.nosqlgeek.jrxredis.core.helper.RedisMsgHelper;
+import org.nosqlgeek.jrxredis.core.buffer.AsyncRedisMsgBuffer;
+import org.nosqlgeek.jrxredis.core.buffer.IMsgBuffer;
 import org.nosqlgeek.jrxredis.core.netty.error.UnknownMsgTypeErr;
 
 import java.util.*;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.Future;
 import java.util.logging.Logger;
 
 /**
@@ -40,10 +39,9 @@ public class RedisClientHandler extends ChannelDuplexHandler {
 
 
     /**
-     * Simple message buffers
+     * An async messge buffer. Futures are placeholders until the response arrives.
      */
-    private IRedisMsgBuffer in = new SimpleRedisMsgBuffer();
-    private IRedisMsgBuffer out = new SimpleRedisMsgBuffer();
+    private IMsgBuffer<Future<RedisMessage>> futures = new AsyncRedisMsgBuffer();
 
 
 
@@ -108,49 +106,26 @@ public class RedisClientHandler extends ChannelDuplexHandler {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
         RedisMessage retrieved = (RedisMessage) msg;
-        LOG.finest("Retrieved msg:" + retrieved);
-        RedisMsgHelper.printMsg(retrieved, LOG);
-        this.in.add(retrieved);
-
+        SettableRedisMsgFuture f = (SettableRedisMsgFuture) this.futures.retrieveNow();
+        f.setIn(retrieved);
     }
 
 
     /**
-     * Retrieves the next response from the channel or null if the response is not yet available
-     *
-     * @return
-     */
-    public RedisMsgFuture retrieveResponse() {
-
-        return new RedisMsgFuture(in, out);
-    }
-
-    /**
-     * Retrieves the next response from the channel by waiting until it becomes available
-     *
-     * @return
-     */
-    public RedisMessage retrieveResponse(long timeout) throws TimeoutException {
-
-        RedisMessage received = this.in.retrieveBlocking(timeout);
-        RedisMessage sent = this.out.retrieveNow();
-
-        return received;
-    }
-
-
-    /**
-     * Writes a message to the channel and returns the handler itself
+     * Sends a message by creating a Future for it. The future is put into the message buffer and acts as placeholder
+     * until the response arrives.
      *
      * @param msg
+     * @return
      */
-    public RedisClientHandler sendMessage(ArrayRedisMessage msg) {
+    public Future<RedisMessage> sendAsyncMessage(ArrayRedisMessage msg) {
 
-        this.out.add(msg);
+        Future<RedisMessage> f = new SettableRedisMsgFuture(msg);
+
+        this.futures.add(f);
         this.ctx.writeAndFlush(msg);
-        return this;
+        return f;
     }
-
 
 
     /**
@@ -197,20 +172,11 @@ public class RedisClientHandler extends ChannelDuplexHandler {
 
 
     /**
-     * Only for debugging and testing purposes
+     * Only for debugging purposes
      *
      * @return
      */
-    public IRedisMsgBuffer getOut() {
-        return out;
-    }
-
-    /**
-     * Only for debugging and testing purposes
-     *
-     * @return
-     */
-    public IRedisMsgBuffer getIn() {
-        return in;
+    public IMsgBuffer<Future<RedisMessage>> getFutures() {
+        return futures;
     }
 }

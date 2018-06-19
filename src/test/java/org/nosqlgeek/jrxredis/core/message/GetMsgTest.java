@@ -9,10 +9,10 @@ import org.junit.jupiter.api.Test;
 import org.nosqlgeek.jrxredis.core.helper.ByteBufHelper;
 import org.nosqlgeek.jrxredis.core.netty.RedisClientBootstrap;
 import org.nosqlgeek.jrxredis.core.netty.RedisClientHandler;
-import org.nosqlgeek.jrxredis.core.netty.RedisMsgFuture;
 
 import java.util.*;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -54,22 +54,25 @@ class GetMsgTest {
         bootstrap.disconnect();
     }
 
+
     @Test
     void getMsgTest() throws Exception {
 
         System.out.println("-- getMsgTest");
-
+        System.out.println("Flushing all message buffers ...");
+        handler.getFutures().flush();
 
         if (bootstrap.isConnected()) {
 
             System.out.println("Setting a single value ...");
             SetMsg set = new SetMsg("hello", "world");
-            RedisMessage setRes = handler.sendMessage(set).retrieveResponse(1000);
+            RedisMessage setRes = handler.sendAsyncMessage(set).get(1000, TimeUnit.MILLISECONDS);
+
             assertEquals("OK", ((SimpleStringRedisMessage) setRes).content());
 
             System.out.println("Getting a singly value async ...");
             GetMsg get = new GetMsg("hello");
-            Future<RedisMessage> getRes = handler.sendMessage(get).retrieveResponse();
+            Future<RedisMessage> getRes = handler.sendAsyncMessage(get);
 
             System.out.print("Waiting until the Future is 'done' ...");
             while (!getRes.isDone()) {
@@ -88,46 +91,36 @@ class GetMsgTest {
         System.out.println("-- get5KMessagesTest");
 
         System.out.println("Flushing all message buffers ...");
-        handler.getIn().flush();
-        handler.getOut().flush();
+        handler.getFutures().flush();
 
         if (bootstrap.isConnected()) {
-
-
 
             System.out.println("Setting 5000 values ...");
             for (int i = 0; i < 5000 ; i++) {
 
                 SetMsg set = new SetMsg("hello:" + i, "world:" + i);
-                handler.sendMessage(set).retrieveResponse(1000);
+                handler.sendAsyncMessage(set).get(1000, TimeUnit.MILLISECONDS);
             }
+
+            List<Future<RedisMessage>> results = new ArrayList<Future<RedisMessage>>();
 
             System.out.println("Getting 5000 values async ...");
             for (int i = 0; i < 5000 ; i++) {
 
                 GetMsg get = new GetMsg("hello:" + i);
-                handler.sendMessage(get);
+                results.add(handler.sendAsyncMessage(get));
             }
 
             System.out.println("Waiting 5 secs ...");
             Thread.sleep(5000);
 
-            System.out.println("Checking that 5000 resonses arrived ... ");
-            assertEquals(5000, handler.getOut().getSize());
-            assertEquals(5000, handler.getIn().getSize());
+            System.out.println("Checking if all 5000 responses arrived ...");
 
+            for ( Future<RedisMessage> f : results ) {
 
-            System.out.println("Consuming the 5000 responses from the buffer ...");
-            for (int i = 0; i < 5000 ; i++) {
+                assertEquals(true, f.isDone());
 
-                handler.retrieveResponse().get();
             }
-
-            System.out.println("Checking that all responses are consumed ...");
-            assertEquals(0, handler.getOut().getSize());
-            assertEquals(0, handler.getIn().getSize());
-
-
         }
     }
 
@@ -138,15 +131,14 @@ class GetMsgTest {
 
 
         System.out.println("Flushing all message buffers ...");
-        handler.getIn().flush();
-        handler.getOut().flush();
+        handler.getFutures().flush();
 
 
         System.out.println("Setting 5000 values ...");
         for (int i = 0; i < 5000 ; i++) {
 
             SetMsg set = new SetMsg("hello:" + i, "world:" + i);
-            handler.sendMessage(set).retrieveResponse(1000);
+            handler.sendAsyncMessage(set).get(1000, TimeUnit.MILLISECONDS);
         }
 
         System.out.println("Getting 1000 values async ...");
@@ -155,7 +147,7 @@ class GetMsgTest {
         for (int i = 0; i < 1000 ; i++) {
 
             GetMsg get = new GetMsg("hello:" + i);
-            Future<RedisMessage> resultFuture = handler.sendMessage(get).retrieveResponse();
+            Future<RedisMessage> resultFuture = handler.sendAsyncMessage(get);
             results.add(resultFuture);
         }
 
@@ -173,7 +165,6 @@ class GetMsgTest {
 
     }
 
-
     @Test
     void checkRandomMessageReplyOrderTest() throws Exception {
 
@@ -184,14 +175,15 @@ class GetMsgTest {
         for (int i = 0; i < 1000 ; i++) {
 
             SetMsg set = new SetMsg("hello:" + i, "world:" + i);
-            handler.sendMessage(set).retrieveResponse(1000);
+            //handler.sendMessage(set).retrieveResponse(1000);
+            handler.sendAsyncMessage(set).get(1000,TimeUnit.MILLISECONDS);
         }
 
 
         System.out.println("Generating 50 random keys ...");
         Random random = new Random();
 
-        Map<String, RedisMsgFuture> items = new HashMap<String, RedisMsgFuture>();
+        Map<String, Future<RedisMessage>> items = new HashMap<String, Future<RedisMessage>>();
 
         for (int i = 0; i < 50 ; i++) {
 
@@ -203,7 +195,7 @@ class GetMsgTest {
         System.out.println("Getting async randomly ...");
         for ( String key : items.keySet()) {
 
-            items.put(key, handler.sendMessage(new GetMsg(key)).retrieveResponse());
+            items.put(key, handler.sendAsyncMessage(new GetMsg(key)));
 
         }
 
@@ -213,8 +205,8 @@ class GetMsgTest {
         System.out.println("Checking if we retrieved the right values ...");
 
 
-        int idx1 = random.nextInt(50-1);
-        int idx2 = random.nextInt(50-1);
+        int idx1 = random.nextInt(20);
+        int idx2 = random.nextInt(20);
 
         String key = items.keySet().toArray()[idx1].toString();
         String reqId  = key.split(":")[1];
