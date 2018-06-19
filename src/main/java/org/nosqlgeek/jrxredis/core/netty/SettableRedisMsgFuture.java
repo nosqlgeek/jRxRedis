@@ -2,15 +2,15 @@ package org.nosqlgeek.jrxredis.core.netty;
 
 import io.netty.handler.codec.redis.RedisMessage;
 import org.nosqlgeek.jrxredis.core.helper.StopWatch;
-
-import java.util.Date;
-import java.util.Timer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Logger;
 
 public class SettableRedisMsgFuture implements Future<RedisMessage> {
+
+    private static Logger LOG = Logger.getLogger(SettableRedisMsgFuture.class.getName());
 
     /**
      * Request
@@ -105,6 +105,8 @@ public class SettableRedisMsgFuture implements Future<RedisMessage> {
                 //0.1 ms
                 Thread.sleep(0, 100000);
             }
+
+            LOG.finest("Waited: " + sw.elapsed());
 
             if (in == null) throw new TimeoutException("Operation timed out!");
             else return in;
