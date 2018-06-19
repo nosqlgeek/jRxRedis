@@ -12,10 +12,6 @@ import io.netty.handler.codec.redis.RedisEncoder;
 /**
  * Initialize the Redis channel by adding Inbound and Outbound handlers to the channel's pipeline
  *
- * - Inbound: RedisDecoder, RedisBulkStringAggregator, RedisArrayAggregatpor
- * - Outbound: RedisEncoder
- * - Custom duplex: RedisClientHander
- *
  */
 public class RedisChannelInit extends ChannelInitializer<SocketChannel> {
 
