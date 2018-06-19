@@ -70,9 +70,16 @@ public class SimpleRedisMsgBuffer implements IRedisMsgBuffer {
 
     }
 
+
     @Override
     public int getSize() {
 
         return this.inner.size();
+    }
+
+    @Override
+    public void flush() {
+
+        this.inner.clear();
     }
 }

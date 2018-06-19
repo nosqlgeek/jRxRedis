@@ -31,4 +31,9 @@ public interface IRedisMsgBuffer {
      */
     public int getSize();
 
+    /**
+     * Flush the buffer
+     */
+    public void flush();
+
 }

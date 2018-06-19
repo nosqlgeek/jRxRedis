@@ -44,4 +44,5 @@ public class GetMsg extends ArrayRedisMessage {
 
         this(ByteBufHelper.toByteBuf(key));
     }
+
 }

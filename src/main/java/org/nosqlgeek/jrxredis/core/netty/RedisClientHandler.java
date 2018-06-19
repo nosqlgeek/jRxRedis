@@ -194,7 +194,7 @@ public class RedisClientHandler extends ChannelDuplexHandler {
 
 
     /**
-     * Only for debugging purposes
+     * Only for debugging and testing purposes
      *
      * @return
      */
@@ -203,7 +203,7 @@ public class RedisClientHandler extends ChannelDuplexHandler {
     }
 
     /**
-     * Only for debugging purposes
+     * Only for debugging and testing purposes
      *
      * @return
      */

@@ -14,7 +14,7 @@ import io.netty.handler.codec.redis.RedisEncoder;
  *
  * - Inbound: RedisDecoder, RedisBulkStringAggregator, RedisArrayAggregatpor
  * - Outbound: RedisEncoder
- * - Custom outbound: RedisClientHander
+ * - Custom duplex: RedisClientHander
  *
  */
 public class RedisChannelInit extends ChannelInitializer<SocketChannel> {

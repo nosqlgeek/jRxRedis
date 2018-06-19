@@ -15,14 +15,25 @@ import java.util.concurrent.TimeoutException;
 public class RedisMsgFuture implements Future<RedisMessage> {
 
     /**
-     * Incoming messages
+     * Reference to the incoming messages buffer
      */
     private final IRedisMsgBuffer in;
 
     /**
-     * Outgoing messages
+     * Reference to the outgoing messages
      */
     private final IRedisMsgBuffer out;
+
+
+    /**
+     * The request which belongs to this Future
+     */
+    private RedisMessage request;
+
+    /**
+     * The response which belongs to this Future
+     */
+    private RedisMessage response;
 
 
     /**
@@ -78,11 +89,11 @@ public class RedisMsgFuture implements Future<RedisMessage> {
 
         if (isDone()) {
 
-            RedisMessage received = in.retrieveNow();
-            RedisMessage sent = out.retrieveNow();
+            this.response = in.retrieveNow();
+            this.request = out.retrieveNow();
 
+            return this.response;
 
-            return received;
         } else {
             return null;
         }
@@ -95,10 +106,10 @@ public class RedisMsgFuture implements Future<RedisMessage> {
 
         if (unit.equals(TimeUnit.MILLISECONDS)) {
 
-            RedisMessage received = in.retrieveBlocking(timeout);
-            RedisMessage sent = out.retrieveNow();
+            this.response = in.retrieveBlocking(timeout);
+            this.request = out.retrieveNow();
 
-            return received;
+            return this.response;
 
         } else {
 
@@ -106,5 +117,21 @@ public class RedisMsgFuture implements Future<RedisMessage> {
         }
 
 
+    }
+
+    /**
+     * Access the request which belongs to this Future
+     * @return
+     */
+    public RedisMessage getRequest() {
+        return request;
+    }
+
+    /**
+     * Access the response which belongs to this Future
+     * @return
+     */
+    public RedisMessage getResponse() {
+        return response;
     }
 }

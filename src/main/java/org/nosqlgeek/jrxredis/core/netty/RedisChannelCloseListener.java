@@ -17,6 +17,6 @@ public class RedisChannelCloseListener implements GenericFutureListener<Future<?
 
     public void operationComplete(Future<? super Void> future) throws Exception {
 
-        LOG.info("Connection closed!");
+        LOG.finest("Connection closed!");
     }
 }
