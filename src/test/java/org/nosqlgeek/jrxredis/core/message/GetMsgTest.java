@@ -32,15 +32,14 @@ class GetMsgTest {
     /**
      * Client handler
      */
-    private static RedisClientHandler handler;
+    private static RedisClientHandler handler = new RedisClientHandler();
 
     @BeforeAll
     static void setUp() {
 
         try {
 
-            bootstrap = new RedisClientBootstrap(HOST, PORT);
-            handler = bootstrap.getHandler();
+            bootstrap = new RedisClientBootstrap(HOST, PORT, handler);
 
         } catch (Exception e) {
 

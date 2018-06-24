@@ -26,16 +26,17 @@ public class RedisClientBootstrap {
     private Channel channel = null;
     private boolean connected = false;
 
-    private final RedisClientHandler handler = new RedisClientHandler();
+    private final BaseRedisClientHandler handler;
 
 
     /**
      * The default Ctor
      */
-    public RedisClientBootstrap(String host, int port) throws BootstrapErr {
+    public RedisClientBootstrap(String host, int port, BaseRedisClientHandler handler) throws BootstrapErr {
 
         this.host = host;
         this.port = port;
+        this.handler = handler;
 
         boostrap();
     }
@@ -118,7 +119,7 @@ public class RedisClientBootstrap {
      *
      * @return
      */
-    public RedisClientHandler getHandler() {
+    public BaseRedisClientHandler getHandler() {
         return handler;
     }
 }
