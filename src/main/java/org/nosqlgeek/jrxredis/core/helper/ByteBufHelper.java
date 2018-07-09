@@ -32,7 +32,18 @@ public class ByteBufHelper {
      */
     public static String fromByteBuf(ByteBuf byteBuf) {
 
-        return new String(ByteBufUtil.getBytes(byteBuf));
+        //Byte buffers are reference counted objects. Netty is taking care of the sent messages (and associated ByteBuffers
+        //automatically, but we need to take care of the received byte buffers.
+        //A byte buffer might no longer be available, then its reference count decreased to 0
+        if (byteBuf.refCnt() == 0) {
+
+            return "ByteBuf(refCnt=0)";
+
+        } else {
+
+            return new String(ByteBufUtil.getBytes(byteBuf));
+        }
+
     }
 
 }

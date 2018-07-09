@@ -13,12 +13,18 @@ import java.util.ArrayList;
 /**
  * The message which is sent to Redis for a GET command
  */
-public class GetMsg extends ArrayRedisMessage {
+public class GetMsg extends ArrayRedisMessage implements IKeyMsg {
 
     /**
      * Command name
      */
     public static String CMD = "GET";
+
+
+    /**
+     * The key to get
+     */
+    private ByteBuf key;
 
 
     /**
@@ -31,6 +37,7 @@ public class GetMsg extends ArrayRedisMessage {
 
         super(new ArrayList<RedisMessage>());
 
+        this.key = key;
         this.children().add(new FullBulkStringRedisMessage(toByteBuf(CMD)));
         this.children().add(new FullBulkStringRedisMessage(key));
     }
@@ -45,4 +52,30 @@ public class GetMsg extends ArrayRedisMessage {
         this(ByteBufHelper.toByteBuf(key));
     }
 
+    /**
+     * For debugging purposes
+     *
+     * @return
+     */
+    @Override
+    public String toString() {
+
+
+        //
+
+        StringBuilder sb = new StringBuilder(CMD);
+        sb.append(" ");
+        sb.append(ByteBufHelper.fromByteBuf(this.key));
+
+        return sb.toString();
+    }
+
+
+    /**
+     * Get the key
+     * @return
+     */
+    public ByteBuf getKey() {
+        return key;
+    }
 }

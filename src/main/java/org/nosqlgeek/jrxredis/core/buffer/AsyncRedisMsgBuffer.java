@@ -1,6 +1,7 @@
 package org.nosqlgeek.jrxredis.core.buffer;
 
 import io.netty.handler.codec.redis.RedisMessage;
+import org.nosqlgeek.jrxredis.core.netty.error.TimeoutErr;
 
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -24,7 +25,7 @@ public class AsyncRedisMsgBuffer implements IMsgBuffer<Future<RedisMessage>>{
     /**
      * We are putting the future already in when sending the request, so it's not necessary for wait for it
      *
-     * @param timout
+     * @param timeout
      * @return
      * @throws TimeoutException
      */
@@ -39,7 +40,7 @@ public class AsyncRedisMsgBuffer implements IMsgBuffer<Future<RedisMessage>>{
 
         } catch (InterruptedException e) {
 
-            throw new TimeoutException("Could not retrieve message future due to a timeout.");
+            throw new TimeoutErr();
         }
 
         return result;

@@ -2,10 +2,10 @@ package org.nosqlgeek.jrxredis.core.netty;
 
 import io.netty.handler.codec.redis.RedisMessage;
 import org.nosqlgeek.jrxredis.core.helper.StopWatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import org.nosqlgeek.jrxredis.core.netty.error.NoResultErr;
+import org.nosqlgeek.jrxredis.core.netty.error.TimeoutErr;
+
+import java.util.concurrent.*;
 import java.util.logging.Logger;
 
 public class SettableRedisMsgFuture implements Future<RedisMessage> {
@@ -22,6 +22,17 @@ public class SettableRedisMsgFuture implements Future<RedisMessage> {
      */
     private RedisMessage in;
 
+    /**
+     * In order to wait for the result
+     */
+    private CountDownLatch completeSignal = new CountDownLatch(1);
+
+
+    /**
+     * Just for benchmarking purposes
+     */
+    private StopWatch sw = new StopWatch();
+
 
     /**
      * Init the future by passing the request
@@ -29,6 +40,9 @@ public class SettableRedisMsgFuture implements Future<RedisMessage> {
      * @param out
      */
     public SettableRedisMsgFuture(RedisMessage out) {
+
+        //DEBUG: Request sent
+        sw.start();
 
         this.out = out;
     }
@@ -78,7 +92,9 @@ public class SettableRedisMsgFuture implements Future<RedisMessage> {
     @Override
     public RedisMessage get() throws InterruptedException, ExecutionException {
 
-        return in;
+        if (in == null) throw new NoResultErr();
+
+        return this.in;
     }
 
     /**
@@ -94,34 +110,25 @@ public class SettableRedisMsgFuture implements Future<RedisMessage> {
     @Override
     public RedisMessage get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
 
-        if (TimeUnit.MILLISECONDS == unit) {
+        boolean success = completeSignal.await(timeout, unit);
 
-            StopWatch sw = new StopWatch();
-            sw.start();
+        if (!success) throw new TimeoutErr();
 
-            //TODO: This seems to be quite dirty.
-            while (in == null && sw.elapsed() < timeout) {
-
-                //0.1 ms
-                Thread.sleep(0, 100000);
-            }
-
-            LOG.finest("Waited: " + sw.elapsed());
-
-            if (in == null) throw new TimeoutException("Operation timed out!");
-            else return in;
-
-        } else {
-
-            throw new ExecutionException(new Exception("Only milliseconds are supported as timeout value."));
-        }
+        return this.in;
     }
 
     /**
      * Provide the response to the future
      */
     public void setIn(RedisMessage in) {
+
+        //Response received
         this.in = in;
+        completeSignal.countDown();
+
+
+        //DEBUG: Response received
+        LOG.finest( "cmd = " + this.out.toString() + ", time = " + sw.elapsed());
     }
 
     /**

@@ -16,13 +16,13 @@ import java.util.concurrent.TimeUnit;
 
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.nosqlgeek.jrxredis.core.message.TestConstants.*;
+import static org.nosqlgeek.jrxredis.core.test.TestConstants.*;
 
 
 /**
  * Test if Getting a message works as expected
  */
-class GetMsgTest {
+class SetAndGetMsgTest {
 
     /**
      * Client bootstrap

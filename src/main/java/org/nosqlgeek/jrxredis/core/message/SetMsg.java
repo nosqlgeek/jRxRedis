@@ -10,9 +10,20 @@ import java.util.ArrayList;
 
 import static org.nosqlgeek.jrxredis.core.helper.ByteBufHelper.toByteBuf;
 
-public class SetMsg extends ArrayRedisMessage {
+public class SetMsg extends ArrayRedisMessage implements IKeyValueMsg {
 
     public static String CMD = "SET";
+
+    /**
+     * The key to set
+     */
+    private ByteBuf key;
+
+    /**
+     * The value to set
+     */
+    private  ByteBuf value;
+
 
     /**
      * Cto which accepts strings
@@ -34,9 +45,42 @@ public class SetMsg extends ArrayRedisMessage {
     public SetMsg(ByteBuf key, ByteBuf value) {
 
         super(new ArrayList<RedisMessage>());
+        this.key = key;
+        this.value = value;
 
         this.children().add(new FullBulkStringRedisMessage(toByteBuf(CMD)));
         this.children().add(new FullBulkStringRedisMessage(key));
         this.children().add(new FullBulkStringRedisMessage(value));
+    }
+
+    /**
+     * Get the key
+     * @return
+     */
+    public ByteBuf getKey() {
+        return key;
+    }
+
+    /**
+     * Get the value
+     * @return
+     */
+    public ByteBuf getValue() {
+        return value;
+    }
+
+    /**
+     * For debugging purposes
+     *
+     * @return
+     */
+    @Override
+    public String toString() {
+
+        StringBuilder sb = new StringBuilder(CMD);
+        sb.append(" ");
+        sb.append(key);
+
+        return sb.toString();
     }
 }

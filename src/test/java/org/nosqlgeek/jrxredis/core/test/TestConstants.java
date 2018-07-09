@@ -1,4 +1,4 @@
-package org.nosqlgeek.jrxredis.core.message;
+package org.nosqlgeek.jrxredis.core.test;
 
 public interface TestConstants {
 
