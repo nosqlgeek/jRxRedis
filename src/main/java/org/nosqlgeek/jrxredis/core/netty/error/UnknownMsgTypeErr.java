@@ -8,13 +8,12 @@ import io.netty.handler.codec.CodecException;
  */
 public class UnknownMsgTypeErr extends CodecException {
 
-    private final static String MSG = "Unknown message type: ";
+    public final static String MSG = "Unknown message type: ";
 
 
     public UnknownMsgTypeErr(Object msg) {
 
         super( MSG + msg );
-        this.printStackTrace();
     }
 
 }

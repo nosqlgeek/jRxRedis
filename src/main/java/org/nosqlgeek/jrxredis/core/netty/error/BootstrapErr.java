@@ -6,11 +6,16 @@ package org.nosqlgeek.jrxredis.core.netty.error;
  */
 public class BootstrapErr extends Exception {
 
-    private final static String MSG = "Could not bootstrap the client.";
+    public final static String MSG = "Could not bootstrap the client.";
 
     public BootstrapErr(Exception e) {
+
         super(e);
-        this.printStackTrace();
     }
 
+    @Override
+    public String toString() {
+
+        return MSG;
+    }
 }

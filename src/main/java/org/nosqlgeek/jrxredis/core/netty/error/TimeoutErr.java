@@ -4,7 +4,7 @@ import java.util.concurrent.TimeoutException;
 
 public class TimeoutErr extends TimeoutException {
 
-    private static final String MSG = "Operation timed out!";
+    public static final String MSG = "Operation timed out!";
 
     /**
      * Default Ctor

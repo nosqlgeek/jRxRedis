@@ -61,8 +61,6 @@ public class GetMsg extends ArrayRedisMessage implements IKeyMsg {
     public String toString() {
 
 
-        //
-
         StringBuilder sb = new StringBuilder(CMD);
         sb.append(" ");
         sb.append(ByteBufHelper.fromByteBuf(this.key));

@@ -4,7 +4,7 @@ import java.util.concurrent.ExecutionException;
 
 public class NoResultErr extends ExecutionException {
 
-    private static final String MSG = "Result is not yet available!";
+    public static final String MSG = "Result is not yet available!";
 
     /**
      * Default Ctor

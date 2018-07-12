@@ -12,7 +12,15 @@ import static org.nosqlgeek.jrxredis.core.helper.ByteBufHelper.toByteBuf;
 
 public class SetMsg extends ArrayRedisMessage implements IKeyValueMsg {
 
+    /**
+     * Command
+     */
     public static String CMD = "SET";
+
+    /**
+     * Successful response
+     */
+    public static String SUCCESS = "OK";
 
     /**
      * The key to set
